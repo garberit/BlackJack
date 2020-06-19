@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace BlackJack1B
 {
@@ -7,195 +9,189 @@ namespace BlackJack1B
 	{
 		static void Main(string[] args)
 		{
+			string fn = "Invalid Option";
+			TextWriter errStream = new StreamWriter(fn);
+
 			Console.WriteLine("*********************");
 			Console.WriteLine("Welcome to Black Jack 1B!");
-			while (true)
+			Console.Write("How many players will play this game? ");
+			var numOfPlayers = Console.ReadLine();
+
+			Players players = new Players();
+
+			// adds new players, skips dealer at index 0 
+			for (int i = 1;  i <  Int16.Parse(numOfPlayers) + 1; i++)
+			{
+				Player player = new Player();
+				Console.Write($"Player {i}'s name:");
+				player.Name = Console.ReadLine();
+				players.Add(player);
+			}
+
+			var answer = new ConsoleKeyInfo();
+			while (answer.KeyChar != '0')
 			{
 				Console.WriteLine("0 - Exit");
 				Console.WriteLine("1 - Play");
 				Console.Write("Your choice: ");
-				var answer = Console.ReadLine();
-				if (answer != "1" && answer != "0")
+				answer = Console.ReadKey();
+				if (answer.KeyChar != '1' && answer.KeyChar != '0')
 				{
-					Console.WriteLine("Invalid Option");
+					Console.SetError(errStream);
 				}
-				switch (answer)
+				switch (answer.KeyChar)
 				{
-					case "0":
+					case '0':
 						return;
-					case "1":
-						Game game = new Game(); //create new game, deal initial 2 cards to each player						
-						Console.Write("How many players will play this game? "); //partially implemented multiplayer game
-						var numOfPlayers = Console.ReadLine();						
-						if (Convert.ToInt32(numOfPlayers) > 1) //if more than one, calls a different constructor of Game
-						{
-							game = new Game(Convert.ToInt32(numOfPlayers));
-						}
-						for (int i = 1; i < game.Players.Count; i++) //requests players names
-						{
-							Console.Write($"Player {i}'s name:");
-							game.Players[i].Name = Console.ReadLine();
-						}
-						for (int i = 1; i < game.Players.Count; i++) //shows the cards of all players except the dealer
-						{
-							Console.WriteLine($"{game.Players[i].Name}'s cards: ");
-							foreach (Card card in game.Players[i].Hand)
-							{
-								Console.WriteLine($"{card.Face}, {card.Value} ");
-							}
-							Console.WriteLine($"{game.Players[i].Name}'s total: {game.Players[i].GetSumOfAllCards()}"); //gives the sum of the hand for all players except dealer
-						}
-						Console.WriteLine($"Dealer's first card: {game.Dealer.Hand.ElementAt(0).Face}, {game.Dealer.Hand.ElementAt(0).Value}"); //dealer's first hand
-						for (int i = 1; i < game.Players.Count; i++)
-						{
-							if (game.Dealer.HasBlackJack() && !game.Players[i].HasBlackJack()) //evaluates if the dealer has blackjack with each player
-							{
-								Console.WriteLine($"Sorry, dealer has BlackJack!. Dealer's hand:");
-								foreach (var card in game.Dealer.Hand)
-								{
-									Console.WriteLine($"{card.Face}, {card.Value} ");
-								}
-								Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
-								Console.WriteLine($"{game.Players[i].Name}, on the other hand, got :" + game.Players[i].GetSumOfAllCards());
-								foreach (var card in game.Players[i].Hand)
-								{
-									Console.WriteLine($"{card.Face}, {card.Value} ");
-								}
-								game.Players[i].Score--;
-								Console.WriteLine($"{game.Players[i].Name}'s score: {game.Players[i].Score}.");
-								break;
-							}
-							if (!game.Dealer.HasBlackJack() && game.Players[i].HasBlackJack()) //evaluates if each player has blackjack against dealer
-							{
-								Console.WriteLine($"{game.Players[i].Name} has BlackJack!. Dealer's hand:");
-								foreach (var card in game.Dealer.Hand)
-								{
-									Console.WriteLine($"{card.Face}, {card.Value} ");
-								}
-								Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
-								Console.WriteLine($"{game.Players[i].Name}'s sum: {game.Players[i].GetSumOfAllCards()}, Hand:");
-								foreach (var card in game.Players[i].Hand)
-								{
-									Console.WriteLine($"{card.Face}, {card.Value} ");
-								}
+					case '1':
+						//create new game, deal initial 2 cards to each player	
+						Game game = new Game(players);						
 
-								game.Players[i].Score--;
-								Console.WriteLine($"{game.Players[i].Name}'s score: {game.Players[i].Score}.");
-								break;
-							}							
-						}
-						var condition = true; //setup break of while loop
-						while (condition)
+						//shows the cards of all players except the dealer
+						for (int i = 1; i < game.Players.Count; i++) 
 						{
-							Console.Write($"Hit or stay? h/s: ");
-							var answ = Console.ReadLine();
-							if (answ != "h" && answ != "s")
+							Console.WriteLine($"\r\n{game.Players[i].Name}'s cards: ");
+							Console.WriteLine(game.Players[i].Hand.ToString());
+							//gives the sum of the hand for all players except dealer
+							Console.WriteLine($"{game.Players[i].Name}'s total: {game.Players[i].GetSumOfAllCards()}"); 
+						}
+						//dealer's first card
+						Console.WriteLine($"Dealer's first card: {game.Dealer.Hand.ElementAt(0).Face}, {game.Dealer.Hand.ElementAt(0).Value}");
+
+						//check blackjack
+						if (game.Dealer.HasBlackJack())
+						{
+							for (int i = 1; i < game.Players.Count; i++)
 							{
+								if (!game.Players[i].HasBlackJack())
 								{
-									Console.WriteLine("Invalid Option");
-								}
-							}
-							switch (answ)
-							{
-								case "h":
-									for (int i = 1; i < game.Players.Count; i++) //hits all players first
-									{
-										game.HitPlayer(game.Players[i]);
-
-										Console.WriteLine($"{game.Players[i].Name}'s cards: ");
-										foreach (Card card in game.Players[i].Hand)
-										{
-											Console.WriteLine($"{card.Face}, {card.Value} ");
-										}
-										Console.WriteLine($"{game.Players[i].Name}'s total: ");
-										Console.WriteLine($"{game.Players[i].GetSumOfAllCards()}");
-
-										if (game.Players[i].IsBusted())
-										{
-											game.Players[i].Score--;
-											Console.WriteLine($"Sorry, {game.Players[i].Name} busted. sum of Cards: {game.Players[i].GetSumOfAllCards()}");
-											Console.WriteLine($"{game.Players[i].Name}'s score: {game.Players[i].Score}.");
-											condition = false;
-											break;
-										}
-										while (game.Players[i].HasBlackJack() && !game.Dealer.HasBlackJack())
-										{
-											game.HitDealer();
-											while (!game.DealerWins(game.Players[i]))
-											{
-												Console.WriteLine($"{game.Players[i].Name} has BlackJack!. Dealer's hand:");
-												foreach (var card in game.Dealer.Hand)
-												{
-													Console.WriteLine($"{card.Face}, {card.Value} ");
-												}
-												game.Players[i].Score++;
-												condition = false;
-											}
-											break;											
-										}																			
-										///decide if dealer hits or not to be implemented										
-									}
-									game.HitDealer();
-									for (int i = 1; i < game.Players.Count; i++)
-									{
-										if (game.Dealer.HasBlackJack() && !game.Players[i].HasBlackJack())
-										{
-											Console.WriteLine($"Sorry, dealer has BlackJack!. Dealer's hand:");
-											foreach (var card in game.Dealer.Hand)
-											{
-												Console.WriteLine($"{card.Face}, {card.Value} ");
-											}
-											Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
-											Console.WriteLine($"{game.Players[i].Name}, on the other hand, got :" + game.Players[i].GetSumOfAllCards());
-											foreach (var card in game.Players[i].Hand)
-											{
-												Console.WriteLine($"{card.Face}, {card.Value} ");
-											}
-											game.Players[i].Score--;
-											Console.WriteLine($"{game.Players[i].Name}'s score: {game.Players[i].Score}.");
-											break;
-										}
-									}
-									Console.WriteLine($"Dealer's first card: {game.Dealer.Hand.ElementAt(0).Face}, {game.Dealer.Hand.ElementAt(0).Value}, Dealer's second card: {game.Dealer.Hand.ElementAt(1).Face}, {game.Dealer.Hand.ElementAt(1).Value}");
-
+									Console.WriteLine($"Sorry {game.Players[i].Name}, Dealer has BlackJack.");
+									DealerWon(game.Players[i], game);
 									break;
-								case "s":
-									for (int i = 1; i < game.Players.Count; i++)
-									{
-										if (game.DealerWins(game.Players[i]))
-										{
-											foreach (var player in game.Players)
-											{
-												Console.WriteLine($"{player.Name}'s hand:");
-												foreach (var card in player.Hand)
-												{
-													Console.WriteLine($"{card.Face}, {card.Value}");
-												}
-												Console.WriteLine($"Sum: {player.GetSumOfAllCards()}");
-												
-											}
-											Console.WriteLine($"{game.Players[i].Name} lost. Sum: {game.Players[i].GetSumOfAllCards()}. Dealer: {game.Dealer.GetSumOfAllCards()}");
-											game.Players[i].Score--;
-											break;
-										}
-										Console.WriteLine($"{game.Players[i].Name} won. Sum: {game.Players[i].GetSumOfAllCards()}. Dealer: {game.Dealer.GetSumOfAllCards()}");
-										game.Players[i].Score++;
-										Console.WriteLine($"{game.Players[i].Name}'s score: {game.Players[i].Score}.");
-
-										break;
-									}
-									condition = false;
-										break;
-								default:
-									Console.WriteLine("Sorry not a valid option");
-									break;
+								}
 							}
 						}
+
+						//check other players for blackjack
+						if (game.Players.Any(player => player.HasBlackJack()))
+						{
+							for (int i = 1; i < game.Players.Count; i++)
+							{
+								if (game.Players[i].HasBlackJack())
+								{
+									Console.WriteLine($" {game.Players[i].Name} has BlackJack.");
+									PlayerWon(game.Players[i], game);
+									break;
+								}
+							}
+						}
+
+						//check if anyone's left
+						if (!game.CheckAnyoneLeft())
+						{
+							break;
+						}
+
+
+						//time for hit or stay
+						foreach (Player player in game.Players)
+						{
+							if (player.IsDealer)
+							{
+								continue;
+							}
+
+							var answ = '#';
+							while (answ != 's')
+							{
+								Console.Write($"\r\nHit or stay? h/s: ");
+								answ = Console.ReadLine()[0];
+								if (answ != 'h' && answ != 's')
+								{
+									Console.SetError(errStream);
+								}
+								switch (answ)
+								{
+									case 'h':
+										game.HitPlayer(player);
+										Console.WriteLine($"\r\n{player.Name}'s cards: ");
+										Console.WriteLine(player.Hand.ToString());
+										Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
+
+										if (player.IsBusted())
+										{
+											Console.WriteLine($"Sorry, {player.Name} busted.");
+											player.Score--;
+											Console.WriteLine($"{player.Name}'s score: {player.Score}. GAME OVER!");
+											answ = 's';
+										}
+										break;
+									case 's':
+										break;
+									default:
+										Console.SetError(errStream);
+										break;
+								}
+
+							}
+						}
+
+						//players played, not dealer
+						if (game.CheckAnyoneLeft())
+						{
+							//already implements hit dealer until 17 in game.hitdealer
+							while (game.Dealer.GetSumOfAllCards() <= 17)
+							{
+								game.HitDealer();		
+							}
+							//who won?!
+							foreach (var player in game.Players)
+							{
+								if (player.IsDealer)
+								{
+									continue;
+								}
+								if (game.DealerWins(player))
+								{
+									DealerWon(player, game);
+								} else
+								{
+									PlayerWon(player, game);
+								}
+							}											
+						}						
 						break;
 					default:
+						Console.SetError(errStream);
 						break;
 				}
+
 			}
-		}		
+			
+
+		}
+		private static void PlayerWon(Player player, Game game)
+		{
+			Console.WriteLine($"{player.Name} wins. Dealer's hand:");
+			Console.WriteLine(game.Dealer.Hand.ToString());
+			Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
+			player.Score++;
+			Console.WriteLine($"{player.Name}'s cards: ");
+			Console.WriteLine(player.Hand.ToString());
+			Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
+		}
+
+		private static void DealerWon(Player player, Game game)
+		{
+			Console.WriteLine($"Dealer wins. Dealer's hand:");
+			Console.WriteLine(game.Dealer.Hand.ToString());
+			Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
+			player.Score--;
+			Console.WriteLine($"{player.Name}'s cards: ");
+			Console.WriteLine(player.Hand.ToString());
+			Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
+		}
+
 	}
+
 }
