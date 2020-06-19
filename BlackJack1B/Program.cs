@@ -14,8 +14,20 @@ namespace BlackJack1B
 
 			Console.WriteLine("*********************");
 			Console.WriteLine("Welcome to Black Jack 1B!");
-			Console.Write("How many players will play this game? ");
-			var numOfPlayers = Console.ReadLine();
+			
+			string numOfPlayers = "";
+			Int16 h;
+
+			while (!Int16.TryParse(numOfPlayers, out h))
+			{
+				Console.Write("How many players will play this game? ");
+				numOfPlayers = Console.ReadLine();
+				if (!Int16.TryParse(numOfPlayers, out h))
+				{
+					Console.Error.WriteLine("Invalid Option");
+				}
+				
+			}
 
 			Players players = new Players();
 
@@ -108,7 +120,7 @@ namespace BlackJack1B
 								answ = Console.ReadLine()[0];
 								if (answ != 'h' && answ != 's')
 								{
-									Console.SetError(errStream);
+									Console.Error.WriteLine("Invalid Option", errStream);
 								}
 								switch (answ)
 								{
@@ -129,7 +141,7 @@ namespace BlackJack1B
 									case 's':
 										break;
 									default:
-										Console.SetError(errStream);
+										Console.Error.WriteLine("Invalid Option", errStream);
 										break;
 								}
 
@@ -162,7 +174,7 @@ namespace BlackJack1B
 						}						
 						break;
 					default:
-						Console.SetError(errStream);
+						Console.Error.WriteLine("Invalid Option", errStream);
 						break;
 				}
 
