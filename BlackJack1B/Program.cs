@@ -8,7 +8,7 @@ namespace BlackJack1B
 	class Program
 	{
 		static void Main(string[] args)
-		{
+		{	
 			string fn = "Invalid Option";
 			TextWriter errStream = new StreamWriter(fn);
 
@@ -16,20 +16,19 @@ namespace BlackJack1B
 			Console.WriteLine("Welcome to Black Jack 1B!");
 			
 			string numOfPlayers = "";
-			Int16 h;
-
+			Int16 h;		
+					
 			while (!Int16.TryParse(numOfPlayers, out h))
-			{
-				Console.Write("How many players will play this game? ");
-				numOfPlayers = Console.ReadLine();
-				if (!Int16.TryParse(numOfPlayers, out h))
 				{
-					Console.Error.WriteLine("Invalid Option");
+					Console.Write("How many players will play this game? ");
+					numOfPlayers = Console.ReadLine();
+					if (!Int16.TryParse(numOfPlayers, out h))
+					{
+						throw new ArgumentException("Must specify a number");
+					}
 				}
 				
-			}
-
-			Players players = new Players();
+				Players players = new Players();
 
 			// adds new players, skips dealer at index 0 
 			for (int i = 1;  i <  Int16.Parse(numOfPlayers) + 1; i++)
@@ -81,7 +80,16 @@ namespace BlackJack1B
 									DealerWon(game.Players[i], game);
 									break;
 								}
+								if (game.Players[i].HasBlackJack())
+								{
+									Console.WriteLine($"{game.Players[i].Name} and Dealer has BlackJack. Score remains same.");
+									
+									break;
+								}
+
 							}
+							
+							break;
 						}
 
 						//check other players for blackjack
@@ -106,81 +114,92 @@ namespace BlackJack1B
 
 
 						//time for hit or stay
-						foreach (Player player in game.Players)
+						for (int i = 1; i < game.Players.Count; i++)
 						{
-							if (player.IsDealer)
+							Player player = game.Players[i];						
+							if (!player.IsDealer)
 							{
-								continue;
-							}
-
-							var answ = '#';
-							while (answ != 's')
-							{
-								Console.Write($"\r\nHit or stay? h/s: ");
-								answ = Console.ReadLine()[0];
-								if (answ != 'h' && answ != 's')
+								var answ = '#';
+								while (answ != 's')
 								{
-									Console.Error.WriteLine("Invalid Option", errStream);
-								}
-								switch (answ)
-								{
-									case 'h':
-										game.HitPlayer(player);
-										Console.WriteLine($"\r\n{player.Name}'s cards: ");
-										Console.WriteLine(player.Hand.ToString());
-										Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
+									Console.Write($"\r\nHit or stay? h/s: ");
+									answ = Console.ReadLine()[0];
+									if (answ != 'h' && answ != 's' )
+									{
+										Console.SetError(errStream);
+									}
+									switch (answ)
+									{
+										case 'h':
+											game.HitPlayer(player);
+											Console.WriteLine($"\r\n{player.Name}'s cards: ");
+											Console.WriteLine(player.Hand.ToString());
+											Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
 
-										if (player.IsBusted())
-										{
-											Console.WriteLine($"Sorry, {player.Name} busted.");
-											player.Score--;
-											Console.WriteLine($"{player.Name}'s score: {player.Score}. GAME OVER!");
-											answ = 's';
-										}
-										break;
-									case 's':
-										break;
-									default:
-										Console.Error.WriteLine("Invalid Option", errStream);
-										break;
-								}
+											if (player.IsBusted())
+											{
+												Console.WriteLine($"Sorry, {player.Name} busted.");
+												player.Score--;
+												Console.WriteLine($"{player.Name}'s score: {player.Score}. GAME OVER!");
+												answ = 's';
+											}
+											if (player.HasBlackJack())
+											{
+												PlayerWon(player, game);
+											}
+											break;
+										case 's':
+											//players played, not dealer
+											if (game.CheckAnyoneLeft())
+											{
+												//already implements hit dealer until 17 in game.hitdealer
 
+												while (game.Dealer.GetSumOfAllCards() <= 17)
+												{
+													game.HitDealer();
+												}
+
+												for (int j = 1; j < game.Players.Count; j++)
+												{
+													if (game.Dealer.IsBusted())
+													{
+														PlayerWon(game.Players[j], game);
+													}
+													if (game.DealerWins(game.Players[j]))
+													{
+														DealerWon(game.Players[j], game);
+														break;
+													}
+													if (!game.DealerWins(game.Players[j]))
+													{
+														PlayerWon(game.Players[j], game);
+														break;
+													}
+
+
+												}
+											}
+											break;
+										default:
+											Console.WriteLine("Invalid Option");
+											break;
+									}
+								}
 							}
 						}
 
-						//players played, not dealer
-						if (game.CheckAnyoneLeft())
-						{
-							//already implements hit dealer until 17 in game.hitdealer
-							while (game.Dealer.GetSumOfAllCards() <= 17)
-							{
-								game.HitDealer();		
-							}
-							//who won?!
-							foreach (var player in game.Players)
-							{
-								if (player.IsDealer)
-								{
-									continue;
-								}
-								if (game.DealerWins(player))
-								{
-									DealerWon(player, game);
-								} else
-								{
-									PlayerWon(player, game);
-								}
-							}											
-						}						
+											
 						break;
 					default:
-						Console.Error.WriteLine("Invalid Option", errStream);
+						Console.WriteLine("Invalid Option");
 						break;
 				}
 
 			}
-			
 
+			
+				
+		
 		}
 		private static void PlayerWon(Player player, Game game)
 		{

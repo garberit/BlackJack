@@ -87,13 +87,21 @@ namespace BlackJack1B
 			{
 				answer = false;
 			}
-			if (!Dealer.IsBusted() && player.IsBusted())
+			else if (Dealer.IsBusted() && player.IsBusted())
+			{
+				answer = false;
+			}
+			else if (!Dealer.IsBusted() && player.IsBusted())
 			{
 				return true;
 			}
-			if (Dealer.GetSumOfAllCards() > player.GetSumOfAllCards())
+			else if (Dealer.GetSumOfAllCards() > player.GetSumOfAllCards())
 			{
 				return true;
+			}
+			else if (Dealer.IsBusted())
+			{
+				answer = false;
 			}
 			return answer;
 		}
