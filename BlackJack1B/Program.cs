@@ -109,10 +109,7 @@ namespace BlackJack1B
 							break;
 						}
 
-
 						//time for hit or stay
-
-
 						for (int i = 1; i < game.Players.Count; i++)
 						{
 							Player player = game.Players[i];
@@ -121,7 +118,7 @@ namespace BlackJack1B
 								var answ = '#';
 								while (answ != 's')
 								{
-									Console.Write($"\r\nHit or stay? h/s: ");
+									Console.Write($"\r\n{game.Players[i].Name}, Hit or stay? h/s: ");
 									try
 									{
 
@@ -187,24 +184,17 @@ namespace BlackJack1B
 											}
 											break;
 										default:
-											Console.WriteLine("Invalid Option");
 											break;
 									}
 								}
 							}
 						}
 
-
 						break;
 					default:
-						Console.WriteLine("Invalid Option");
 						break;
 				}
-
 			}
-
-
-
 
 		}
 		private static void PlayerWon(Player player, Game game)
@@ -215,7 +205,7 @@ namespace BlackJack1B
 			player.Score++;
 			Console.WriteLine($"\r\n{player.Name}'s cards: ");
 			Console.WriteLine(player.Hand.ToString());
-			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}\r\n");
+			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}. {player.Name}'s score: {player.Score}\r\n");
 		}
 
 		private static void DealerWon(Player player, Game game)
@@ -226,7 +216,7 @@ namespace BlackJack1B
 			player.Score--;
 			Console.WriteLine($"\r\n{player.Name}'s cards: ");
 			Console.WriteLine(player.Hand.ToString());
-			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}\r\n");
+			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}. {player.Name}'s score: {player.Score}\r\n");
 		}
 
 	}

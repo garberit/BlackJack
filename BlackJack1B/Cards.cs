@@ -14,7 +14,7 @@ namespace BlackJack1B
 				sb.Append(this.ToArray()[i].Face + " " + this.ToArray()[i].Value);
 				if (i > 0)
 				{
-					sb.Append(" - ");
+					sb.Append(", ");
 				}
 			}
 			return sb.ToString();
