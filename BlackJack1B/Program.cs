@@ -8,30 +8,30 @@ namespace BlackJack1B
 	class Program
 	{
 		static void Main(string[] args)
-		{	
+		{
 			string fn = "Invalid Option";
 			TextWriter errStream = new StreamWriter(fn);
 
 			Console.WriteLine("*********************");
 			Console.WriteLine("Welcome to Black Jack 1B!");
-			
+
 			string numOfPlayers = "";
-			Int16 h;		
-					
+			Int16 h;
+
 			while (!Int16.TryParse(numOfPlayers, out h))
+			{
+				Console.Write("How many players will play this game? ");
+				numOfPlayers = Console.ReadLine();
+				if (!Int16.TryParse(numOfPlayers, out h))
 				{
-					Console.Write("How many players will play this game? ");
-					numOfPlayers = Console.ReadLine();
-					if (!Int16.TryParse(numOfPlayers, out h))
-					{
-						throw new ArgumentException("Must specify a number");
-					}
+					throw new ArgumentException("Must specify a number");
 				}
-				
-				Players players = new Players();
+			}
+
+			Players players = new Players();
 
 			// adds new players, skips dealer at index 0 
-			for (int i = 1;  i <  Int16.Parse(numOfPlayers) + 1; i++)
+			for (int i = 1; i < Int16.Parse(numOfPlayers) + 1; i++)
 			{
 				Player player = new Player();
 				Console.Write($"Player {i}'s name:");
@@ -56,18 +56,18 @@ namespace BlackJack1B
 						return;
 					case '1':
 						//create new game, deal initial 2 cards to each player	
-						Game game = new Game(players);						
+						Game game = new Game(players);
 
 						//shows the cards of all players except the dealer
-						for (int i = 1; i < game.Players.Count; i++) 
+						for (int i = 1; i < game.Players.Count; i++)
 						{
 							Console.WriteLine($"\r\n{game.Players[i].Name}'s cards: ");
 							Console.WriteLine(game.Players[i].Hand.ToString());
 							//gives the sum of the hand for all players except dealer
-							Console.WriteLine($"{game.Players[i].Name}'s total: {game.Players[i].GetSumOfAllCards()}"); 
+							Console.WriteLine($"{game.Players[i].Name}'s total: {game.Players[i].GetSumOfAllCards()}\r\n");
 						}
 						//dealer's first card
-						Console.WriteLine($"Dealer's first card: {game.Dealer.Hand.ElementAt(0).Face}, {game.Dealer.Hand.ElementAt(0).Value}");
+						Console.WriteLine($"Dealer's first card: {game.Dealer.Hand.ElementAt(0).Face}, {game.Dealer.Hand.ElementAt(0).Value}\r\n");
 
 						//check blackjack
 						if (game.Dealer.HasBlackJack())
@@ -76,19 +76,16 @@ namespace BlackJack1B
 							{
 								if (!game.Players[i].HasBlackJack())
 								{
-									Console.WriteLine($"Sorry {game.Players[i].Name}, Dealer has BlackJack.");
+									Console.WriteLine($"\r\n{game.Players[i].Name}, Dealer has BlackJack.");
 									DealerWon(game.Players[i], game);
 									break;
 								}
 								if (game.Players[i].HasBlackJack())
 								{
 									Console.WriteLine($"{game.Players[i].Name} and Dealer has BlackJack. Score remains same.");
-									
 									break;
 								}
-
 							}
-							
 							break;
 						}
 
@@ -114,17 +111,28 @@ namespace BlackJack1B
 
 
 						//time for hit or stay
+
+
 						for (int i = 1; i < game.Players.Count; i++)
 						{
-							Player player = game.Players[i];						
+							Player player = game.Players[i];
 							if (!player.IsDealer)
 							{
 								var answ = '#';
 								while (answ != 's')
 								{
 									Console.Write($"\r\nHit or stay? h/s: ");
-									answ = Console.ReadLine()[0];
-									if (answ != 'h' && answ != 's' )
+									try
+									{
+
+										answ = Console.ReadLine()[0];
+									}
+									catch (IndexOutOfRangeException)
+									{
+										Console.WriteLine($"Invalid argument");
+									}
+
+									if (answ != 'h' && answ != 's')
 									{
 										Console.SetError(errStream);
 									}
@@ -175,8 +183,6 @@ namespace BlackJack1B
 														PlayerWon(game.Players[j], game);
 														break;
 													}
-
-
 												}
 											}
 											break;
@@ -188,7 +194,7 @@ namespace BlackJack1B
 							}
 						}
 
-											
+
 						break;
 					default:
 						Console.WriteLine("Invalid Option");
@@ -197,30 +203,30 @@ namespace BlackJack1B
 
 			}
 
-			
-				
-		
+
+
+
 		}
 		private static void PlayerWon(Player player, Game game)
 		{
-			Console.WriteLine($"{player.Name} wins. Dealer's hand:");
+			Console.WriteLine($"\r\n{player.Name} wins. Dealer's hand:");
 			Console.WriteLine(game.Dealer.Hand.ToString());
 			Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
 			player.Score++;
-			Console.WriteLine($"{player.Name}'s cards: ");
+			Console.WriteLine($"\r\n{player.Name}'s cards: ");
 			Console.WriteLine(player.Hand.ToString());
-			Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
+			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}\r\n");
 		}
 
 		private static void DealerWon(Player player, Game game)
 		{
-			Console.WriteLine($"Dealer wins. Dealer's hand:");
+			Console.WriteLine($"\r\nDealer wins. Dealer's hand:");
 			Console.WriteLine(game.Dealer.Hand.ToString());
 			Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
 			player.Score--;
-			Console.WriteLine($"{player.Name}'s cards: ");
+			Console.WriteLine($"\r\n{player.Name}'s cards: ");
 			Console.WriteLine(player.Hand.ToString());
-			Console.WriteLine($"{player.Name}'s total: " + player.GetSumOfAllCards());
+			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}\r\n");
 		}
 
 	}
