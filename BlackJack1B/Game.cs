@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BlackJack1B
@@ -106,10 +107,56 @@ namespace BlackJack1B
 			return answer;
 		}
 
+		public bool PlayerWins(Player player, Players players)
+		{
+			var otherPlayers = players.Where(p => p.Name != player.Name);
+			bool answer = false;
+			foreach (var p in otherPlayers)
+			{
+				if (player.IsBusted() && !p.IsBusted())
+				{
+					answer = false;
+				}
+				else if (player.IsBusted() && p.IsBusted())
+				{
+					answer = false;
+				}
+				else if (!player.IsBusted() && p.IsBusted())
+				{
+					return true;
+				}
+				else if (player.GetSumOfAllCards() > p.GetSumOfAllCards())
+				{
+					return true;
+				}
+				else if (player.IsBusted())
+				{
+					answer = false;
+				}
+
+			}
+			
+			
+			return answer;
+		}
+
 		public bool IsPush(Player player)
 		{
 			return player.GetSumOfAllCards() == Dealer.GetSumOfAllCards() ? true : false;
 		}
+
+		public bool IsPushAll(Player player, Players players)
+		{
+			var otherPlayers = players.Where(p => p.Name != player.Name);
+			bool answer = false;
+			foreach (var p in otherPlayers)
+			{
+				return player.GetSumOfAllCards() == p.GetSumOfAllCards() ? true : false;
+			}
+			return answer;				
+		}
+
+		
 
 		public bool CheckAnyoneLeft()
 		{

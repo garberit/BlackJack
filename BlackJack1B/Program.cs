@@ -46,6 +46,7 @@ namespace BlackJack1B
 				Console.WriteLine("1 - Play");
 				Console.Write("Your choice: ");
 				answer = Console.ReadKey();
+				Console.WriteLine();
 				if (answer.KeyChar != '1' && answer.KeyChar != '0')
 				{
 					Console.SetError(errStream);
@@ -148,7 +149,7 @@ namespace BlackJack1B
 												Console.WriteLine($"{player.Name}'s score: {player.Score}. GAME OVER!");
 												answ = 's';
 											}
-											if (player.HasBlackJack())
+											if (player.HasBlackJack() && game.PlayerWins(game.Players[i], game.Players))
 											{
 												PlayerWon(player, game);
 											}
@@ -166,20 +167,40 @@ namespace BlackJack1B
 
 												for (int j = 1; j < game.Players.Count; j++)
 												{
-													if (game.Dealer.IsBusted())
+													if (game.Dealer.IsBusted() && game.PlayerWins(game.Players[j], game.Players))
 													{
 														PlayerWon(game.Players[j], game);
 													}
-													if (game.DealerWins(game.Players[j]))
+													else if (game.DealerWins(game.Players[j]) && !game.PlayerWins(game.Players[j], game.Players))
 													{
 														DealerWon(game.Players[j], game);
 														break;
 													}
-													if (!game.DealerWins(game.Players[j]))
+													else if (!game.DealerWins(game.Players[j]) && game.PlayerWins(game.Players[j], game.Players))
 													{
 														PlayerWon(game.Players[j], game);
 														break;
 													}
+													else if (game.IsPushAll(game.Players[i], game.Players))
+													{
+														Console.WriteLine($"Push. no points.");
+														for (int k = 1; k < game.Players.Count; k++)
+														{
+															Console.WriteLine($"\r\nDealer's hand:");
+															Console.WriteLine(game.Dealer.Hand.ToString());
+															Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");															
+															Console.WriteLine($"\r\n{game.Players[k].Name}'s cards: ");
+															Console.WriteLine(game.Players[k].Hand.ToString());
+															Console.WriteLine($"{game.Players[k].Name}'s total: {game.Players[k].GetSumOfAllCards()}. {game.Players[k].Name}'s score: {game.Players[k].Score}\r\n");
+														}
+													}													
+													else
+													{
+														Console.WriteLine($"{game.Players[j].Name}, you lost.");
+														DealerWon(game.Players[j], game);
+														game.Players[j].Score--;
+													}
+
 												}
 											}
 											break;
@@ -199,6 +220,42 @@ namespace BlackJack1B
 		}
 		private static void PlayerWon(Player player, Game game)
 		{
+			for (int i = 1; i < game.Players.Count; i++)
+			{
+				if (game.PlayerWins(game.Players[i], game.Players))
+				{
+					Console.WriteLine($"\r\n{player.Name} wins. Dealer's hand:");
+					Console.WriteLine(game.Dealer.Hand.ToString());
+					Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
+					player.Score++;
+					Console.WriteLine($"\r\n{player.Name}'s cards: ");
+					Console.WriteLine(player.Hand.ToString());
+					Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}. {player.Name}'s score: {player.Score}\r\n");
+				}
+			}
+			
+		}
+
+		private static void DealerWon(Player player, Game game)
+		{
+			for (int i = 1; i < game.Players.Count; i++)
+			{
+				if (!game.PlayerWins(game.Players[i], game.Players))
+				{
+					Console.WriteLine($"\r\nDealer wins. Dealer's hand:");
+					Console.WriteLine(game.Dealer.Hand.ToString());
+					Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
+					player.Score--;
+					Console.WriteLine($"\r\n{player.Name}'s cards: ");
+					Console.WriteLine(player.Hand.ToString());
+					Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}. {player.Name}'s score: {player.Score}\r\n");
+				}
+			}
+		}
+		
+
+		private static void PlayerWonNoPrint(Player player, Game game)
+		{
 			Console.WriteLine($"\r\n{player.Name} wins. Dealer's hand:");
 			Console.WriteLine(game.Dealer.Hand.ToString());
 			Console.WriteLine($"Dealer's sum: {game.Dealer.GetSumOfAllCards()}");
@@ -208,7 +265,7 @@ namespace BlackJack1B
 			Console.WriteLine($"{player.Name}'s total: {player.GetSumOfAllCards()}. {player.Name}'s score: {player.Score}\r\n");
 		}
 
-		private static void DealerWon(Player player, Game game)
+		private static void DealerWonNoPrint(Player player, Game game)
 		{
 			Console.WriteLine($"\r\nDealer wins. Dealer's hand:");
 			Console.WriteLine(game.Dealer.Hand.ToString());
