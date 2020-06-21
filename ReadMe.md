@@ -2,6 +2,8 @@
 
 It works but wouldn't sell it to a casino just yet :p
 
+Blackjack in C#. WIP
+
 Single player works, multi player still buggy.
 
 Game class can be considered a factory. Sort of.
